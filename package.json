@@ -1,6 +1,7 @@
 {
   "name": "ilia-nodejs-challenge",
   "private": true,
+  "type": "module",
   "workspaces": [
     "apps/*",
     "packages/*"
