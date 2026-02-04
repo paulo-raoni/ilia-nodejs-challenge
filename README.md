@@ -165,3 +165,26 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:3002/status
 
 If both endpoints respond successfully, the environment is correctly set up.
 
+
+---
+
+## Running Unit Tests
+
+This project includes **unit tests focused on business use cases**, without requiring a running database.
+
+Currently, unit tests are implemented for the **Transactions (Wallet) microservice**, covering the application layer (use cases) only.
+
+### Run unit tests for Transactions
+
+From the project root, run:
+
+```bash
+npm -w @ilia/transactions test
+```
+
+This command executes Jest directly in the Transactions workspace, using mocked repositories
+and validating business rules and edge cases.
+
+> ⚠️ Note: Jest is executed with node --experimental-vm-modules to ensure compatibility
+with ESM modules on Node.js 20.
+The warning displayed by Node.js is expected and does not indicate a failure.
