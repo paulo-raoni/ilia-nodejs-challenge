@@ -14,7 +14,7 @@ export function createUserUseCase(repo) {
     const data = createUserSchema.parse(body);
 
     const existing = await repo.findByEmail(data.email);
-    if (existing) throw Errors.conflict?.('Email already in use') || Errors.badRequest('Email already in use');
+    if (existing) throw Errors.conflict('Email already in use');
 
     const password_hash = await bcrypt.hash(data.password, 10);
 

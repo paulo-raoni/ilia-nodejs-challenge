@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 import { mustGetEnv, parseBearer, Errors, logger } from '@ilia/shared';
-import { waitForDb } from '@ilia/shared/src/waitForDb.js';
+import { waitForDb } from '@ilia/shared';
 
 import { createDbPool } from './config/db.js';
 import { runMigrations } from './infra/db/migrate.js';
@@ -12,7 +12,7 @@ import { usersRepository } from './infra/repositories/usersRepository.js';
 import { createUserUseCase } from './application/usecases/createUser.js';
 import { authUserUseCase } from './application/usecases/authUser.js';
 import { listUsersUseCase } from './application/usecases/listUsers.js';
-import { getUserUseCase } from './application/usecases/getUsers.js';
+import { getUserUseCase } from './application/usecases/getUser.js';
 import { updateUserUseCase } from './application/usecases/updateUser.js';
 import { deleteUserUseCase } from './application/usecases/deleteUser.js';
 
