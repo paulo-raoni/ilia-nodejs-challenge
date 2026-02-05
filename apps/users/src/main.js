@@ -40,11 +40,15 @@ app.setErrorHandler((err, req, reply) => {
  * Public routes (no external JWT required)
  */
 function isPublicRoute(req) {
-  const url = req.url || '';
-  if (req.method === 'POST' && url.startsWith('/users')) return true;
-  if (req.method === 'POST' && url.startsWith('/auth')) return true;
+  const method = req.method;
+  const path = (req.url || '').split('?')[0];
+
+  if (method === 'POST' && path === '/users') return true;
+  if (method === 'POST' && path === '/auth') return true;
+
   return false;
 }
+
 
 /**
  * External JWT auth (default for all routes)
