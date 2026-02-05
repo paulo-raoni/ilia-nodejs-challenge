@@ -14,7 +14,7 @@ import { getBalanceUseCase } from './application/usecases/getBalance.js';
 
 import { registerRoutes } from './http/routes.js';
 
-import { waitForDb } from '@ilia/shared/src/waitForDb.js';
+import { waitForDb } from '@ilia/shared';
 
 
 dotenv.config();
