@@ -3,7 +3,9 @@
 1. [Original Challenge Description](#the-challenge)
 2. [Project Structure & Architecture](#project-structure--architecture)
 3. [Authentication](#authentication)
-4. [Running the Project Locally](#running-the-project-locally)
+4. [Business Rules](#business-rules)
+5. [Running the Project Locally](#running-the-project-locally)
+6. [Running Unit Tests](#running-unit-tests)
 
 > ℹ️ The original challenge description is kept intact below.  
 > Project-specific explanations, architecture details and execution instructions
@@ -125,6 +127,15 @@ npm run token:internal
 ```
 
 ---
+
+
+## Business Rules
+
+- A user **cannot be deleted** if their wallet balance is not zero.
+- This rule is enforced by the Users service through secure internal communication
+  with the Transactions (Wallet) service using an internal JWT.
+
+
 
 ## Running the Project Locally
 
