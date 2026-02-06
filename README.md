@@ -6,6 +6,8 @@
 4. [Business Rules](#business-rules)
 5. [Running the Project Locally](#running-the-project-locally)
 6. [Running Unit Tests](#running-unit-tests)
+7. [Test Coverage](#run-coverage-for-all-workspaces)
+8. [OpenAPI & Swagger UI](#openapi--swagger-ui)
 
 > ℹ️ The original challenge description is kept intact below.  
 > Project-specific explanations, architecture details and execution instructions
@@ -252,6 +254,13 @@ The OpenAPI specs provided by the challenge are available under:
 - `docs/openapi/ms-users.yaml`
 - `docs/openapi/ms-transactions.yaml`
 
+> ℹ️ Swagger UI is provided as a **developer aid only**.
+> It runs in a separate Docker Compose file and does not affect
+> the application runtime or production setup.
+
+The Swagger UI containers use derived OpenAPI files prepared specifically
+for interactive usage under `docs/openapi/swagger/`.
+
 ### Run Swagger UI via Docker
 
 This project provides an optional Docker Compose file to run Swagger UI without
@@ -265,3 +274,6 @@ Then open:
 
 - Users: http://localhost:8081
 - Transactions: http://localhost:8082
+
+CORS is enabled at the HTTP layer to allow browser-based tools
+(such as Swagger UI) while keeping business logic unaffected.
