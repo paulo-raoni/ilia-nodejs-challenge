@@ -8,6 +8,7 @@ import { waitForDb } from '@ilia/shared';
 import { createDbPool } from './config/db.js';
 import { runMigrations } from './infra/db/migrate.js';
 import { usersRepository } from './infra/repositories/usersRepository.js';
+import { transactionsClient } from './infra/clients/transactionsClient.js';
 
 import { createUserUseCase } from './application/usecases/createUser.js';
 import { authUserUseCase } from './application/usecases/authUser.js';
@@ -76,13 +77,15 @@ async function bootstrap() {
 
   const repo = usersRepository(pool);
 
+  const txClient = transactionsClient();
+
   const deps = {
     createUser: createUserUseCase(repo),
     authUser: authUserUseCase(repo),
     listUsers: listUsersUseCase(repo),
     getUser: getUserUseCase(repo),
     updateUser: updateUserUseCase(repo),
-    deleteUser: deleteUserUseCase(repo),
+    deleteUser: deleteUserUseCase({ usersRepository: repo, transactionsClient: txClient }),
   };
 
   await registerRoutes(app, deps);
