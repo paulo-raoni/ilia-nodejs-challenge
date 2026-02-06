@@ -11,4 +11,5 @@ export const Errors = {
   forbidden: (msg = 'Forbidden') => new AppError(msg, 403, 'FORBIDDEN'),
   badRequest: (msg = 'Bad Request') => new AppError(msg, 400, 'BAD_REQUEST'),
   notFound: (msg = 'Not Found') => new AppError(msg, 404, 'NOT_FOUND'),
+  conflict: (msg = 'Conflict') => new AppError(msg, 409, 'CONFLICT'),
 };

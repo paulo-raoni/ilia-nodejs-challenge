@@ -170,21 +170,55 @@ If both endpoints respond successfully, the environment is correctly set up.
 
 ## Running Unit Tests
 
-This project includes **unit tests focused on business use cases**, without requiring a running database.
+This project includes **unit tests focused on business use cases**, without requiring
+a running database or HTTP server.
 
-Currently, unit tests are implemented for the **Transactions (Wallet) microservice**, covering the application layer (use cases) only.
+Tests are implemented at the **application layer (use cases)** for each microservice,
+using in-memory or mocked repositories to validate business rules and edge cases.
 
-### Run unit tests for Transactions
+### Run all unit tests
 
-From the project root, run:
+To execute all unit tests for every microservice in the monorepo, run:
+
+```bash
+npm test
+```
+
+This command runs the test script in all workspaces that define it,
+including the Transactions and Users microservices.
+
+### Transactions (Wallet) microservice
+
+Unit tests for the Transactions service cover wallet-related business logic such as:
+- Creating transactions (credit / debit)
+- Listing transactions
+- Calculating balances
+
+Run the Transactions unit tests with:
 
 ```bash
 npm -w @ilia/transactions test
 ```
+### Users microservice
 
-This command executes Jest directly in the Transactions workspace, using mocked repositories
-and validating business rules and edge cases.
+Unit tests for the Users service cover authentication and user management logic, including:
 
-> ⚠️ Note: Jest is executed with node --experimental-vm-modules to ensure compatibility
-with ESM modules on Node.js 20.
-The warning displayed by Node.js is expected and does not indicate a failure.
+- User creation
+- Authentication (login)
+- Listing users
+- Fetching a user by ID
+- Updating users
+- Deleting users
+
+Run the Users unit tests with:
+
+```bash
+npm -w @ilia/users test
+```
+
+> ⚠️ **Important notes**
+>
+> - Tests are executed using **Jest**, running directly in each workspace.
+> - Jest is executed with `node --experimental-vm-modules` to ensure compatibility with ESM modules on Node.js 20.
+> - The warning displayed by Node.js is expected and does not indicate a failure.
+> - No database containers are required to run unit tests.

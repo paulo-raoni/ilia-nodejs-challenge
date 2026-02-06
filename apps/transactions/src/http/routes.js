@@ -1,5 +1,7 @@
+import { registerInternalRoutes } from './internalRoutes.js';
+
 export async function registerRoutes(app, deps) {
-  const { createTransaction, listTransactions, getBalance } = deps;
+  const { createTransaction, listTransactions, getBalance, verifyInternalJwt } = deps;
 
   app.post('/transactions', async (req, reply) => {
     const authUserId = req.user?.sub;
@@ -18,4 +20,14 @@ export async function registerRoutes(app, deps) {
     const balance = await getBalance(authUserId);
     return reply.send(balance);
   });
+
+  await app.register(
+    async (internalApp) => {
+      await registerInternalRoutes(internalApp, {
+        getBalanceByUserId: getBalance,
+        verifyInternalJwt,
+      });
+    },
+    { prefix: '/internal' }
+  );
 }

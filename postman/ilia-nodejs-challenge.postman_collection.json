@@ -1,51 +1,11 @@
 {
   "info": {
+    "_postman_id": "dfab24c3-f322-4632-a5b1-e964a66b72bf",
     "name": "ilia-nodejs-challenge",
-    "_postman_id": "7a7a7a7a-1111-2222-3333-444444444444",
-    "description": "Auto JWT + Wallet (Transactions) endpoints",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "45933889",
+    "_collection_link": "https://go.postman.co/collection/45933889-dfab24c3-f322-4632-a5b1-e964a66b72bf?source=collection_link"
   },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "// Auto-generate External JWT before every request (unless disabled)",
-          "// Requires: jwtExternalSecret + userId in the selected environment",
-          "",
-          "function base64UrlEncode(wordArray) {",
-          "  return CryptoJS.enc.Base64.stringify(wordArray)",
-          "    .replace(/\\+/g, '-')",
-          "    .replace(/\\//g, '_')",
-          "    .replace(/=+$/g, '');",
-          "}",
-          "",
-          "function signJwtHS256(payloadObj, secret) {",
-          "  const header = { alg: 'HS256', typ: 'JWT' };",
-          "  const headerB64 = base64UrlEncode(CryptoJS.enc.Utf8.parse(JSON.stringify(header)));",
-          "  const payloadB64 = base64UrlEncode(CryptoJS.enc.Utf8.parse(JSON.stringify(payloadObj)));",
-          "  const data = headerB64 + '.' + payloadB64;",
-          "  const signature = CryptoJS.HmacSHA256(data, secret);",
-          "  const sigB64 = base64UrlEncode(signature);",
-          "  return data + '.' + sigB64;",
-          "}",
-          "",
-          "const secret = pm.environment.get('jwtExternalSecret');",
-          "const userId = pm.environment.get('userId');",
-          "",
-          "if (!secret || !userId) {",
-          "  console.warn('Missing jwtExternalSecret or userId in environment.');",
-          "} else {",
-          "  const now = Math.floor(Date.now() / 1000);",
-          "  const payload = { sub: userId, iat: now, exp: now + 60 * 60 }; // 1h",
-          "  const token = signJwtHS256(payload, secret);",
-          "  pm.environment.set('externalJwt', token);",
-          "}"
-        ]
-      }
-    }
-  ],
   "item": [
     {
       "name": "Transactions (Wallet)",
@@ -55,192 +15,485 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{externalJwt}}", "type": "text" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
             ],
             "url": {
               "raw": "{{transactionsBaseUrl}}/status",
-              "host": ["{{transactionsBaseUrl}}"],
-              "path": ["status"]
+              "host": [
+                "{{transactionsBaseUrl}}"
+              ],
+              "path": [
+                "status"
+              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('status 200', function () {",
-                  "  pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "Create Transaction (CREDIT)",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{externalJwt}}", "type": "text" },
-              { "key": "Content-Type", "value": "application/json", "type": "text" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"type\": \"CREDIT\",\n  \"amount\": {{creditAmount}}\n}"
+              "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"type\": \"CREDIT\",\n  \"amount\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{transactionsBaseUrl}}/transactions",
-              "host": ["{{transactionsBaseUrl}}"],
-              "path": ["transactions"]
+              "host": [
+                "{{transactionsBaseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('create credit 200', function () {",
-                  "  pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "try {",
-                  "  const json = pm.response.json();",
-                  "  if (json && json.id) pm.environment.set('lastTransactionId', json.id);",
-                  "} catch (e) {}"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "Create Transaction (DEBIT)",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{externalJwt}}", "type": "text" },
-              { "key": "Content-Type", "value": "application/json", "type": "text" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"type\": \"DEBIT\",\n  \"amount\": {{debitAmount}}\n}"
+              "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"type\": \"DEBIT\",\n  \"amount\": 40\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{transactionsBaseUrl}}/transactions",
-              "host": ["{{transactionsBaseUrl}}"],
-              "path": ["transactions"]
+              "host": [
+                "{{transactionsBaseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('create debit 200', function () {",
-                  "  pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "try {",
-                  "  const json = pm.response.json();",
-                  "  if (json && json.id) pm.environment.set('lastTransactionId', json.id);",
-                  "} catch (e) {}"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "List Transactions",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{externalJwt}}", "type": "text" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
             ],
             "url": {
               "raw": "{{transactionsBaseUrl}}/transactions",
-              "host": ["{{transactionsBaseUrl}}"],
-              "path": ["transactions"]
+              "host": [
+                "{{transactionsBaseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('list 200', function () {",
-                  "  pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('is array', function () {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(Array.isArray(json)).to.be.true;",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "List Transactions (filter type=CREDIT)",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{externalJwt}}", "type": "text" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
             ],
             "url": {
               "raw": "{{transactionsBaseUrl}}/transactions?type=CREDIT",
-              "host": ["{{transactionsBaseUrl}}"],
-              "path": ["transactions"],
-              "query": [{ "key": "type", "value": "CREDIT" }]
+              "host": [
+                "{{transactionsBaseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "CREDIT"
+                }
+              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('filter 200', function () {",
-                  "  pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "Get Balance",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{externalJwt}}", "type": "text" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
             ],
             "url": {
               "raw": "{{transactionsBaseUrl}}/balance",
-              "host": ["{{transactionsBaseUrl}}"],
-              "path": ["balance"]
+              "host": [
+                "{{transactionsBaseUrl}}"
+              ],
+              "path": [
+                "balance"
+              ]
             }
           },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transactions (Internal)",
+      "item": [
+        {
+          "name": "Internal Balance (protected)",
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
                 "exec": [
-                  "pm.test('balance 200', function () {",
+                  "pm.test('internal balance 200', function () {",
                   "  pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('has amount number', function () {",
+                  "",
+                  "pm.test('has amount', function () {",
                   "  const json = pm.response.json();",
                   "  pm.expect(json).to.have.property('amount');",
-                  "  pm.expect(typeof json.amount).to.be.oneOf(['number', 'string']);",
-                  "});"
-                ]
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "(function () {\r",
+                  "  const userId = pm.environment.get('userId');\r",
+                  "  const secret = pm.environment.get('jwtInternalSecret');\r",
+                  "\r",
+                  "  if (!userId) throw new Error('Missing env var: userId');\r",
+                  "  if (!secret) throw new Error('Missing env var: jwtInternalSecret');\r",
+                  "\r",
+                  "  if (typeof CryptoJS === 'undefined') {\r",
+                  "    throw new Error('CryptoJS is not available in this Postman runtime');\r",
+                  "  }\r",
+                  "\r",
+                  "  function b64url(wordArray) {\r",
+                  "    return CryptoJS.enc.Base64.stringify(wordArray)\r",
+                  "      .replace(/\\+/g, '-')\r",
+                  "      .replace(/\\//g, '_')\r",
+                  "      .replace(/=+$/g, '');\r",
+                  "  }\r",
+                  "\r",
+                  "  const now = Math.floor(Date.now() / 1000);\r",
+                  "  const header = b64url(CryptoJS.enc.Utf8.parse(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));\r",
+                  "  const payload = b64url(CryptoJS.enc.Utf8.parse(JSON.stringify({\r",
+                  "    sub: userId,\r",
+                  "    internal: true,\r",
+                  "    iat: now,\r",
+                  "    exp: now + 5 * 60\r",
+                  "  })));\r",
+                  "\r",
+                  "  const data = header + '.' + payload;\r",
+                  "  const sig = b64url(CryptoJS.HmacSHA256(data, secret));\r",
+                  "  pm.environment.set('internalJwt', data + '.' + sig);\r",
+                  "})();\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
-          ]
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{internalJwt}}"
+              }
+            ],
+            "url": {
+              "raw": "{{transactionsBaseUrl}}/internal/balance/{{userId}}",
+              "host": [
+                "{{transactionsBaseUrl}}"
+              ],
+              "path": [
+                "internal",
+                "balance",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('create user 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.have.property('id');",
+                  "pm.expect(json).to.have.property('email');",
+                  "pm.environment.set('userId', json.id);",
+                  "pm.environment.set('userEmail', json.email);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Raoni\",\n  \"last_name\": \"Dev\",\n  \"email\": \"raoni+{{$timestamp}}@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{usersBaseUrl}}/users",
+              "host": [
+                "{{usersBaseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Users (protected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
+            ],
+            "url": {
+              "raw": "{{usersBaseUrl}}/users",
+              "host": [
+                "{{usersBaseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID (protected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
+            ],
+            "url": {
+              "raw": "{{usersBaseUrl}}/users/{{userId}}",
+              "host": [
+                "{{usersBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User (protected)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Raoni Updated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{usersBaseUrl}}/users/{{userId}}",
+              "host": [
+                "{{usersBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User (protected)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{externalJwt}}"
+              }
+            ],
+            "url": {
+              "raw": "{{usersBaseUrl}}/users/{{userId}}",
+              "host": [
+                "{{usersBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('auth 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.have.property('access_token');",
+                  "pm.environment.set('externalJwt', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": {\n    \"email\": \"{{userEmail}}\",\n    \"password\": \"Password123!\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{usersBaseUrl}}/auth",
+              "host": [
+                "{{usersBaseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }

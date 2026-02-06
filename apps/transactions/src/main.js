@@ -14,17 +14,22 @@ import { getBalanceUseCase } from './application/usecases/getBalance.js';
 
 import { registerRoutes } from './http/routes.js';
 
-import { waitForDb } from '@ilia/shared/src/waitForDb.js';
+import { waitForDb } from '@ilia/shared';
 
 
 dotenv.config();
 
 const port = Number(process.env.TRANSACTIONS_PORT || 3001);
 const externalSecret = mustGetEnv('JWT_EXTERNAL_SECRET');
+const internalSecret = mustGetEnv('JWT_INTERNAL_SECRET');
+
+
+function verifyInternalJwt(token) {
+  return jwt.verify(token, internalSecret);
+}
 
 const app = Fastify({ logger: false });
 
-// Error handler padrão
 app.setErrorHandler((err, req, reply) => {
   const status = err.statusCode || 500;
   reply.status(status).send({
@@ -33,14 +38,15 @@ app.setErrorHandler((err, req, reply) => {
   });
 });
 
-// Auth em todas as rotas (como o YAML exige)
 app.addHook('onRequest', async (req) => {
+  // Internal routes use a different auth mechanism (JWT_INTERNAL_SECRET)
+  if (req.url?.startsWith('/internal')) return;
+
   const token = parseBearer(req.headers.authorization);
   if (!token) throw Errors.unauthorized('Missing Bearer token');
 
   try {
     const payload = jwt.verify(token, externalSecret);
-    // Esperado: payload.sub = user_id
     if (!payload?.sub) throw new Error('missing sub');
     req.user = payload;
   } catch {
@@ -59,15 +65,13 @@ async function bootstrap() {
     createTransaction: createTransactionUseCase(repo),
     listTransactions: listTransactionsUseCase(repo),
     getBalance: getBalanceUseCase(repo),
+    verifyInternalJwt,
   };
 
-  // Sanity check (mantém)
   app.get('/status', async () => ({ ok: true, service: 'transactions' }));
 
-  // Rotas do YAML
   await registerRoutes(app, deps);
 
-  // Fechamento gracioso
   app.addHook('onClose', async () => {
     await pool.end();
   });
