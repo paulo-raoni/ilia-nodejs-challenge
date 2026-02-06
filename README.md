@@ -233,3 +233,35 @@ npm -w @ilia/users test
 > - Jest is executed with `node --experimental-vm-modules` to ensure compatibility with ESM modules on Node.js 20.
 > - The warning displayed by Node.js is expected and does not indicate a failure.
 > - No database containers are required to run unit tests.
+
+
+### Run coverage for all workspaces
+
+```bash
+npm run test:coverage
+```
+
+
+---
+
+
+## OpenAPI & Swagger UI
+
+The OpenAPI specs provided by the challenge are available under:
+
+- `docs/openapi/ms-users.yaml`
+- `docs/openapi/ms-transactions.yaml`
+
+### Run Swagger UI via Docker
+
+This project provides an optional Docker Compose file to run Swagger UI without
+changing the main application stack:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.swagger.yml up -d
+```
+
+Then open:
+
+- Users: http://localhost:8081
+- Transactions: http://localhost:8082
