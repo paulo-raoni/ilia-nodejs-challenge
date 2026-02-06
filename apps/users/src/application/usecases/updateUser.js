@@ -23,7 +23,7 @@ export function updateUserUseCase(repo) {
     if (patch.password) update.password_hash = await bcrypt.hash(patch.password, 10);
 
     const updated = await repo.update(id, update);
-    if (!updated) throw Errors.notFound?.('User not found') || Errors.badRequest('User not found');
+    if (!updated) throw Errors.notFound?.('User not found');
 
     return updated;
   };

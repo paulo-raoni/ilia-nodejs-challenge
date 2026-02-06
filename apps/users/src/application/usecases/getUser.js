@@ -7,7 +7,7 @@ export function getUserUseCase(repo) {
   return async (params) => {
     const { id } = paramsSchema.parse(params);
     const user = await repo.findById(id);
-    if (!user) throw Errors.notFound?.('User not found') || Errors.badRequest('User not found');
+    if (!user) throw Errors.notFound?.('User not found');
     return user;
   };
 }
