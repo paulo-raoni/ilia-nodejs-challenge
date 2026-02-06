@@ -41,8 +41,37 @@ describe('updateUserUseCase', () => {
     const repo = makeRepo();
     const execute = updateUserUseCase(repo);
 
-    await expect(
-      execute({ id: 'missing' }, { first_name: 'X' })
-    ).rejects.toMatchObject({ statusCode: 404 });
+    await expect(execute({ id: 'missing' }, { first_name: 'X' })).rejects.toMatchObject({
+      statusCode: 404,
+    });
+  });
+
+  test('success: builds update payload for all fields (including password hash)', async () => {
+    const repo = makeRepo();
+
+    repo.update.mockResolvedValueOnce({
+      id: 'u-1',
+      last_name: 'Name',
+      email: 'new@example.com',
+    });
+
+    const execute = updateUserUseCase(repo);
+
+    await execute(
+      { id: 'u-1' },
+      {
+        last_name: 'Name',
+        email: '  NEW@EXAMPLE.COM  ',
+        password: 'Password123!',
+      },
+    );
+
+    const [calledId, updatePayload] = repo.update.mock.calls[0];
+
+    expect(calledId).toBe('u-1');
+    expect(updatePayload.first_name).toBeUndefined();
+    expect(updatePayload.last_name).toBe('Name');
+    expect(updatePayload.email).toBe('new@example.com');
+    expect(updatePayload.password_hash).toBeTruthy();
   });
 });
