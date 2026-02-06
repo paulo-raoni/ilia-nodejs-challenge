@@ -16,6 +16,7 @@ import { registerRoutes } from './http/routes.js';
 
 import { waitForDb } from '@ilia/shared';
 
+import cors from '@fastify/cors';
 
 dotenv.config();
 
@@ -29,6 +30,21 @@ function verifyInternalJwt(token) {
 }
 
 const app = Fastify({ logger: false });
+
+const allowedOrigins = new Set([
+  'http://localhost:8081',
+  'http://localhost:8082',
+]);
+
+await app.register(cors, {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    return cb(null, allowedOrigins.has(origin));
+  },
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+});
 
 app.setErrorHandler((err, req, reply) => {
   const status = err.statusCode || 500;

@@ -19,12 +19,29 @@ import { deleteUserUseCase } from './application/usecases/deleteUser.js';
 
 import { registerRoutes } from './http/routes.js';
 
+import cors from '@fastify/cors';
+
 dotenv.config();
 
 const port = Number(process.env.USERS_PORT || 3002);
 const externalSecret = mustGetEnv('JWT_EXTERNAL_SECRET');
 
 const app = Fastify({ logger: false });
+
+const allowedOrigins = new Set([
+  'http://localhost:8081',
+  'http://localhost:8082',
+]);
+
+await app.register(cors, {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    return cb(null, allowedOrigins.has(origin));
+  },
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+});
 
 /**
  * Error handler padrão
