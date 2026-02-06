@@ -14,7 +14,8 @@
     "docker:down": "docker compose down -v",
     "token:external": "node scripts/generate-external-token.js user-123",
     "token:internal": "node scripts/generate-internal-token.js user-123",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "test:coverage": "npm -ws --if-present run test -- --coverage"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
