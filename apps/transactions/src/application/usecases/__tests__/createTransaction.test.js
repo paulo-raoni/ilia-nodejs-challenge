@@ -24,7 +24,6 @@ describe('createTransactionUseCase', () => {
       amount: 10,
     });
 
-    // id vem de crypto.randomUUID()
     expect(typeof arg.id).toBe('string');
     expect(arg.id.length).toBeGreaterThan(10);
 

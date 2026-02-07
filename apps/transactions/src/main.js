@@ -55,7 +55,6 @@ app.setErrorHandler((err, req, reply) => {
 });
 
 app.addHook('onRequest', async (req) => {
-  // Internal routes use a different auth mechanism (JWT_INTERNAL_SECRET)
   if (req.url?.startsWith('/internal')) return;
 
   const token = parseBearer(req.headers.authorization);

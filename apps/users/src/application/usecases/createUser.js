@@ -26,6 +26,6 @@ export function createUserUseCase(repo) {
       password_hash,
     });
 
-    return created; // UsersResponse (sem password)
+    return created;
   };
 }

@@ -8,7 +8,6 @@ export async function registerRoutes(app, deps) {
     deleteUser,
   } = deps;
 
-  // Public
   app.post('/users', async (req, reply) => {
     const created = await createUser(req.body);
     return reply.send(created);
@@ -19,7 +18,6 @@ export async function registerRoutes(app, deps) {
     return reply.send(res);
   });
 
-  // Protected
   app.get('/users', async (_req, reply) => {
     const users = await listUsers();
     return reply.send(users);
