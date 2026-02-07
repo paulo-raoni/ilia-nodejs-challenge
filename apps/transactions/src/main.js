@@ -7,6 +7,7 @@ import { mustGetEnv, parseBearer, Errors, logger } from '@ilia/shared';
 import { createDbPool } from './config/db.js';
 import { runMigrations } from './infra/db/migrate.js';
 import { transactionsRepository } from './infra/repositories/transactionsRepository.js';
+import { usersClient } from './infra/clients/usersClient.js';
 
 import { createTransactionUseCase } from './application/usecases/createTransaction.js';
 import { listTransactionsUseCase } from './application/usecases/listTransactions.js';
@@ -75,9 +76,10 @@ async function bootstrap() {
   await runMigrations(pool);
 
   const repo = transactionsRepository(pool);
+  const uClient = usersClient();
 
   const deps = {
-    createTransaction: createTransactionUseCase(repo),
+    createTransaction: createTransactionUseCase({ repo, usersClient: uClient }),
     listTransactions: listTransactionsUseCase(repo),
     getBalance: getBalanceUseCase(repo),
     verifyInternalJwt,

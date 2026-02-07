@@ -10,7 +10,8 @@ export async function registerInternalRoutes(app, deps) {
 
     const token = auth.slice('Bearer '.length);
     try {
-      verifyInternalJwt(token);
+      const payload = verifyInternalJwt(token);
+      req.internalAuth = payload;
     } catch {
       throw Errors.unauthorized('Invalid internal token');
     }
@@ -18,6 +19,18 @@ export async function registerInternalRoutes(app, deps) {
 
   app.get('/balance/:userId', async (req, reply) => {
     const { userId } = z.object({ userId: z.string().min(1) }).parse(req.params);
+
+    const sub = req.internalAuth?.sub;
+    if (!sub) throw Errors.unauthorized('Invalid internal token');
+
+    if (sub !== userId) {
+      throw Errors.forbidden('token subject does not match requested user');
+    }
+
+    if (req.internalAuth?.internal !== true) {
+      throw Errors.forbidden('internal token required');
+    }
+
     const balance = await getBalanceByUserId(userId);
     return reply.send(balance);
   });
