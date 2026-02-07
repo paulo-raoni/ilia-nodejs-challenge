@@ -18,6 +18,7 @@ import { updateUserUseCase } from './application/usecases/updateUser.js';
 import { deleteUserUseCase } from './application/usecases/deleteUser.js';
 
 import { registerRoutes } from './http/routes.js';
+import { registerInternalRoutes } from './http/internalRoutes.js';
 
 import cors from '@fastify/cors';
 
@@ -25,13 +26,11 @@ dotenv.config();
 
 const port = Number(process.env.USERS_PORT || 3002);
 const externalSecret = mustGetEnv('JWT_EXTERNAL_SECRET');
+const internalSecret = mustGetEnv('JWT_INTERNAL_SECRET');
 
 const app = Fastify({ logger: false });
 
-const allowedOrigins = new Set([
-  'http://localhost:8081',
-  'http://localhost:8082',
-]);
+const allowedOrigins = new Set(['http://localhost:8081', 'http://localhost:8082']);
 
 await app.register(cors, {
   origin: (origin, cb) => {
@@ -63,10 +62,10 @@ function isPublicRoute(req) {
 
   if (method === 'POST' && path === '/users') return true;
   if (method === 'POST' && path === '/auth') return true;
+  if (path.startsWith('/internal')) return true;
 
   return false;
 }
-
 
 /**
  * External JWT auth (default for all routes)
@@ -106,6 +105,20 @@ async function bootstrap() {
   };
 
   await registerRoutes(app, deps);
+
+  function verifyInternalJwt(token) {
+    return jwt.verify(token, internalSecret);
+  }
+
+  await app.register(
+    async (internalScope) => {
+      await registerInternalRoutes(internalScope, {
+        getUser: deps.getUser,
+        verifyInternalJwt,
+      });
+    },
+    { prefix: '/internal' },
+  );
 
   app.addHook('onClose', async () => {
     await pool.end();
