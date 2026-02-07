@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Errors } from '@ilia/shared';
+import { randomUUID } from 'node:crypto';
 
 const schema = z.object({
   user_id: z.string().min(1),
@@ -20,7 +21,7 @@ export function createTransactionUseCase(repo) {
       throw Errors.forbidden('user_id does not match authenticated user');
     }
 
-    const id = crypto.randomUUID();
+    const id = randomUUID();
 
     const created = await repo.insertTransaction({
       id,
