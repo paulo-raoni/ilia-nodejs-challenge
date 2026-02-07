@@ -8,7 +8,7 @@ const schema = z.object({
   amount: z.number().int().positive(),
 });
 
-export function createTransactionUseCase(repo) {
+export function createTransactionUseCase({ repo, usersClient }) {
   return async function execute(input, authUserId) {
     const parsed = schema.safeParse(input);
     if (!parsed.success) {
@@ -22,6 +22,9 @@ export function createTransactionUseCase(repo) {
     }
 
     const id = randomUUID();
+
+    // Ensure user still exists (avoid orphan transactions)
+    await usersClient.assertUserExists(data.user_id);
 
     const created = await repo.insertTransaction({
       id,
