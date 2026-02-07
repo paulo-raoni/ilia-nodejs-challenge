@@ -10,7 +10,10 @@ function makeRepo() {
 describe('createTransactionUseCase', () => {
   test('success: inserts and returns created transaction', async () => {
     const repo = makeRepo();
-    const execute = createTransactionUseCase(repo);
+    const usersClient = {
+      assertUserExists: jest.fn().mockResolvedValue(undefined),
+    };
+    const execute = createTransactionUseCase({ repo, usersClient });
 
     const input = { user_id: 'user-1', type: 'CREDIT', amount: 10 };
     const result = await execute(input, 'user-1');
