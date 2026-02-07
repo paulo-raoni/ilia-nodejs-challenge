@@ -124,8 +124,8 @@ JWT_INTERNAL_SECRET=ILIACHALLENGE_INTERNAL
 
 Helper scripts are available to generate tokens locally:
 ```
-npm run token:external
-npm run token:internal
+JWT_EXTERNAL_SECRET=... npm run token:external -- <userId>
+JWT_INTERNAL_SECRET=... npm run token:internal -- <userId>
 ```
 
 ---
