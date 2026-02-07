@@ -337,9 +337,9 @@ an internal token can be generated as shown below.
 Run the following command from the project root:
 
 ```bash
-USER_ID="<USER_ID_AQUI>" \
 docker compose exec -T transactions-api sh -lc \
-'node -e "const jwt=require(\"jsonwebtoken\"); const sub=process.env.USER_ID; if(!sub) throw new Error(\"Missing USER_ID\"); console.log(jwt.sign({sub,internal:true}, process.env.JWT_INTERNAL_SECRET,{expiresIn:\"5m\"}))"'
+'USER_ID="<USER_ID_AQUI>" node -e "const jwt=require(\"jsonwebtoken\"); const sub=process.env.USER_ID; if(!sub) throw new Error(\"Missing USER_ID\"); console.log(jwt.sign({sub,internal:true}, process.env.JWT_INTERNAL_SECRET,{expiresIn:\"5m\"}))"'
+
 ```
 
 Copy the generated token and, in the Transactions Swagger UI:
