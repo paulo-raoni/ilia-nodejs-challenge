@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { Errors } from '@ilia/shared';
+import { BCRYPT_ROUNDS } from './_constants.js';
 
 const createUserSchema = z.object({
   first_name: z.string().min(1),
@@ -16,7 +17,7 @@ export function createUserUseCase(repo) {
     const existing = await repo.findByEmail(data.email);
     if (existing) throw Errors.conflict('Email already in use');
 
-    const password_hash = await bcrypt.hash(data.password, 10);
+    const password_hash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
 
     const created = await repo.create({
       first_name: data.first_name,

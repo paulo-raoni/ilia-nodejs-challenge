@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { Errors } from '@ilia/shared';
+import { BCRYPT_ROUNDS } from './_constants.js';
 
 const paramsSchema = z.object({ id: z.string().min(1) });
 
@@ -20,7 +21,7 @@ export function updateUserUseCase(repo) {
     if (patch.first_name) update.first_name = patch.first_name;
     if (patch.last_name) update.last_name = patch.last_name;
     if (patch.email) update.email = patch.email;
-    if (patch.password) update.password_hash = await bcrypt.hash(patch.password, 10);
+    if (patch.password) update.password_hash = await bcrypt.hash(patch.password, BCRYPT_ROUNDS);
 
     const updated = await repo.update(id, update);
     if (!updated) throw Errors.notFound?.('User not found');
