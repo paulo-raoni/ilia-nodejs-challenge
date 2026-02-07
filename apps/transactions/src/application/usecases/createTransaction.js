@@ -16,7 +16,6 @@ export function createTransactionUseCase(repo) {
 
     const data = parsed.data;
 
-    // Segurança: não permitir criar transação para outro usuário
     if (data.user_id !== authUserId) {
       throw Errors.forbidden('user_id does not match authenticated user');
     }
