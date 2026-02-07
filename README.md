@@ -277,3 +277,83 @@ Then open:
 
 CORS is enabled at the HTTP layer to allow browser-based tools
 (such as Swagger UI) while keeping business logic unaffected.
+
+
+### How to authorize (Users & Transactions Swagger)
+
+This project exposes **two separate Swagger UIs**, one for each microservice.  
+Because of that, it is expected (and normal) that the authorization process must be done
+independently in each Swagger UI.
+
+---
+
+#### Users Swagger (port 8081)
+
+1. Open the Users Swagger UI:  
+   http://localhost:8081
+
+2. Create a user (if it does not exist yet):  
+   - Endpoint:  
+     `POST /users`
+
+3. Generate an external access token:  
+   - Endpoint:  
+     `POST /auth`  
+   - Copy the value returned in `access_token`.
+
+4. In the top-right corner of Swagger UI, click **Authorize** and paste:  
+   `Bearer <access_token>`
+
+---
+
+#### Transactions Swagger (port 8082)
+
+1. Open the Transactions Swagger UI:  
+   http://localhost:8082
+
+2. Click **Authorize**.
+
+3. Paste the **same external token** obtained from the Users Swagger:  
+   `Bearer <access_token>`
+
+> This token allows access to the **public wallet endpoints**.
+
+---
+
+#### Internal Transactions Endpoint
+
+The endpoint below **does NOT accept the external token**:
+
+`GET /internal/balance/{userId}`
+
+It requires an **internal token**, used exclusively for service-to-service communication.
+
+This token is normally generated and used internally by the system.
+For **manual testing and debugging purposes** (e.g. Swagger UI),
+an internal token can be generated as shown below.
+
+##### Generate internal token (manual testing)
+
+Run the following command from the project root:
+
+```bash
+USER_ID="<USER_ID_AQUI>" \
+docker compose exec -T transactions-api sh -lc \
+'node -e "const jwt=require(\"jsonwebtoken\"); const sub=process.env.USER_ID; if(!sub) throw new Error(\"Missing USER_ID\"); console.log(jwt.sign({sub,internal:true}, process.env.JWT_INTERNAL_SECRET,{expiresIn:\"5m\"}))"'
+```
+
+Copy the generated token and, in the Transactions Swagger UI:
+
+1. Click **Authorize**
+2. Paste:  
+   `Bearer <internal_token>`
+
+---
+
+📌 **Important note**
+
+- There are **two independent Swagger UIs**
+- Each one keeps its own authorization state
+- Authorizing in one **does not automatically authorize the other**
+
+This is expected behavior.
