@@ -8,6 +8,7 @@
     "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js -c ./jest.config.cjs"
   },
   "dependencies": {
+    "@fastify/cors": "^8.5.0",
     "@ilia/shared": "0.0.1",
     "dotenv": "^16.4.5",
     "fastify": "^4.0.0",

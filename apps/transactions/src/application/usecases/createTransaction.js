@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Errors } from '@ilia/shared';
+import { randomUUID } from 'node:crypto';
 
 const schema = z.object({
   user_id: z.string().min(1),
@@ -7,7 +8,7 @@ const schema = z.object({
   amount: z.number().int().positive(),
 });
 
-export function createTransactionUseCase(repo) {
+export function createTransactionUseCase({ repo, usersClient }) {
   return async function execute(input, authUserId) {
     const parsed = schema.safeParse(input);
     if (!parsed.success) {
@@ -16,12 +17,14 @@ export function createTransactionUseCase(repo) {
 
     const data = parsed.data;
 
-    // Segurança: não permitir criar transação para outro usuário
     if (data.user_id !== authUserId) {
       throw Errors.forbidden('user_id does not match authenticated user');
     }
 
-    const id = crypto.randomUUID();
+    const id = randomUUID();
+
+    // Ensure user still exists (avoid orphan transactions)
+    await usersClient.assertUserExists(data.user_id);
 
     const created = await repo.insertTransaction({
       id,

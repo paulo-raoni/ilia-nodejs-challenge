@@ -57,7 +57,7 @@ describe('authUserUseCase', () => {
     const execute = authUserUseCase(repo);
 
     await expect(
-      execute({ user: { email: 'x@example.com', password: 'Password123!' } })
+      execute({ user: { email: 'x@example.com', password: 'Password123!' } }),
     ).rejects.toMatchObject({ statusCode: 401 });
   });
 
@@ -76,7 +76,30 @@ describe('authUserUseCase', () => {
     const execute = authUserUseCase(repo);
 
     await expect(
-      execute({ user: { email: 'raoni@example.com', password: 'WRONG' } })
+      execute({ user: { email: 'raoni@example.com', password: 'WRONG' } }),
     ).rejects.toMatchObject({ statusCode: 401 });
+  });
+
+  test('success: accepts flat payload and normalizes email (trim + lowercase)', async () => {
+    const repo = makeRepo();
+
+    const password_hash = await bcrypt.hash('Password123!', 10);
+    repo.findByEmail.mockResolvedValueOnce({
+      id: 'u-1',
+      first_name: 'Raoni',
+      last_name: 'Dev',
+      email: 'raoni@example.com',
+      password_hash,
+    });
+
+    const execute = authUserUseCase(repo);
+
+    const result = await execute({
+      email: '  RAONI@EXAMPLE.COM  ',
+      password: 'Password123!',
+    });
+
+    expect(repo.findByEmail).toHaveBeenCalledWith('raoni@example.com');
+    expect(result).toHaveProperty('access_token');
   });
 });

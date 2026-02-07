@@ -1,0 +1,309 @@
+openapi: 3.0.0
+info:
+  title: Users MS (Swagger Playground)
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3002
+    description: Local
+
+tags:
+  - name: Auth
+  - name: Users
+
+paths:
+  /auth:
+    post:
+      tags: [Auth]
+      summary: Authenticate user and return external JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AuthRequestFlat'
+                - $ref: '#/components/schemas/AuthRequestNested'
+            examples:
+              nested:
+                summary: Nested payload (challenge contract)
+                value:
+                  user:
+                    email: john.doe@example.com
+                    password: Password123!
+              flat:
+                summary: Flat payload (also accepted)
+                value:
+                  email: john.doe@example.com
+                  password: Password123!
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                user:
+                  id: u-123
+                  first_name: John
+                  last_name: Doe
+                  email: john.doe@example.com
+                access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users:
+    post:
+      tags: [Users]
+      summary: Create a new user (public)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            example:
+              first_name: John
+              last_name: Doe
+              email: john.doe@example.com
+              password: Password123!
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              example:
+                id: u-123
+                first_name: John
+                last_name: Doe
+                email: john.doe@example.com
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      tags: [Users]
+      summary: List users (protected)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+              example:
+                - id: u-123
+                  first_name: John
+                  last_name: Doe
+                  email: john.doe@example.com
+                - id: u-456
+                  first_name: Jane
+                  last_name: Doe
+                  email: jane.doe@example.com
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        example: u-123
+
+    get:
+      tags: [Users]
+      summary: Get user by id (protected)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              example:
+                id: u-123
+                first_name: John
+                last_name: Doe
+                email: john.doe@example.com
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    patch:
+      tags: [Users]
+      summary: Patch user fields (protected)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchUserRequest'
+            examples:
+              change_name:
+                summary: Change first_name only
+                value:
+                  first_name: Johnny
+              change_email:
+                summary: Change email only (will be normalized)
+                value:
+                  email: "  NEW@EXAMPLE.COM  "
+              change_password:
+                summary: Change password only
+                value:
+                  password: NewPass123!
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              example:
+                id: u-123
+                first_name: Johnny
+                last_name: Doe
+                email: new@example.com
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    delete:
+      tags: [Users]
+      summary: Delete user (protected)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                ok: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "External JWT (Authorization: Bearer <token>)"
+
+  schemas:
+    CreateUserRequest:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - email
+        - password
+      properties:
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        email:
+          type: string
+          example: john.doe@example.com
+        password:
+          type: string
+          example: Password123!
+
+    PatchUserRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: Johnny
+        last_name:
+          type: string
+          example: Doe
+        email:
+          type: string
+          example: new@example.com
+        password:
+          type: string
+          example: NewPass123!
+
+    UserResponse:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+        - email
+      properties:
+        id:
+          type: string
+          example: u-123
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        email:
+          type: string
+          example: john.doe@example.com
+
+    AuthRequestFlat:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: john.doe@example.com
+        password:
+          type: string
+          example: Password123!
+
+    AuthRequestNested:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              example: john.doe@example.com
+            password:
+              type: string
+              example: Password123!
+
+    AuthResponse:
+      type: object
+      required:
+        - user
+        - access_token
+      properties:
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid

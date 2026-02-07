@@ -15,7 +15,6 @@ export function deleteUserUseCase(deps) {
       throw Errors.conflict('Cannot delete user with non-zero wallet balance');
     }
 
-    // 3) Deletar usuário
     await usersRepository.delete(id);
 
     return { ok: true };

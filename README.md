@@ -6,6 +6,8 @@
 4. [Business Rules](#business-rules)
 5. [Running the Project Locally](#running-the-project-locally)
 6. [Running Unit Tests](#running-unit-tests)
+7. [Test Coverage](#run-coverage-for-all-workspaces)
+8. [OpenAPI & Swagger UI](#openapi--swagger-ui)
 
 > ℹ️ The original challenge description is kept intact below.  
 > Project-specific explanations, architecture details and execution instructions
@@ -122,8 +124,8 @@ JWT_INTERNAL_SECRET=ILIACHALLENGE_INTERNAL
 
 Helper scripts are available to generate tokens locally:
 ```
-npm run token:external
-npm run token:internal
+JWT_EXTERNAL_SECRET=... npm run token:external -- <userId>
+JWT_INTERNAL_SECRET=... npm run token:internal -- <userId>
 ```
 
 ---
@@ -233,3 +235,125 @@ npm -w @ilia/users test
 > - Jest is executed with `node --experimental-vm-modules` to ensure compatibility with ESM modules on Node.js 20.
 > - The warning displayed by Node.js is expected and does not indicate a failure.
 > - No database containers are required to run unit tests.
+
+
+### Run coverage for all workspaces
+
+```bash
+npm run test:coverage
+```
+
+
+---
+
+
+## OpenAPI & Swagger UI
+
+The OpenAPI specs provided by the challenge are available under:
+
+- `docs/openapi/ms-users.yaml`
+- `docs/openapi/ms-transactions.yaml`
+
+> ℹ️ Swagger UI is provided as a **developer aid only**.
+> It runs in a separate Docker Compose file and does not affect
+> the application runtime or production setup.
+
+The Swagger UI containers use derived OpenAPI files prepared specifically
+for interactive usage under `docs/openapi/swagger/`.
+
+### Run Swagger UI via Docker
+
+This project provides an optional Docker Compose file to run Swagger UI without
+changing the main application stack:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.swagger.yml up -d
+```
+
+Then open:
+
+- Users: http://localhost:8081
+- Transactions: http://localhost:8082
+
+CORS is enabled at the HTTP layer to allow browser-based tools
+(such as Swagger UI) while keeping business logic unaffected.
+
+
+### How to authorize (Users & Transactions Swagger)
+
+This project exposes **two separate Swagger UIs**, one for each microservice.  
+Because of that, it is expected (and normal) that the authorization process must be done
+independently in each Swagger UI.
+
+---
+
+#### Users Swagger (port 8081)
+
+1. Open the Users Swagger UI:  
+   http://localhost:8081
+
+2. Create a user (if it does not exist yet):  
+   - Endpoint:  
+     `POST /users`
+
+3. Generate an external access token:  
+   - Endpoint:  
+     `POST /auth`  
+   - Copy the value returned in `access_token`.
+
+4. In the top-right corner of Swagger UI, click **Authorize** and paste:  
+   `Bearer <access_token>`
+
+---
+
+#### Transactions Swagger (port 8082)
+
+1. Open the Transactions Swagger UI:  
+   http://localhost:8082
+
+2. Click **Authorize**.
+
+3. Paste the **same external token** obtained from the Users Swagger:  
+   `Bearer <access_token>`
+
+> This token allows access to the **public wallet endpoints**.
+
+---
+
+#### Internal Transactions Endpoint
+
+The endpoint below **does NOT accept the external token**:
+
+`GET /internal/balance/{userId}`
+
+It requires an **internal token**, used exclusively for service-to-service communication.
+
+This token is normally generated and used internally by the system.
+For **manual testing and debugging purposes** (e.g. Swagger UI),
+an internal token can be generated as shown below.
+
+##### Generate internal token (manual testing)
+
+Run the following command from the project root:
+
+```bash
+docker compose exec -T transactions-api sh -lc \
+'USER_ID="<USER_ID_AQUI>" node -e "const jwt=require(\"jsonwebtoken\"); const sub=process.env.USER_ID; if(!sub) throw new Error(\"Missing USER_ID\"); console.log(jwt.sign({sub,internal:true}, process.env.JWT_INTERNAL_SECRET,{expiresIn:\"5m\"}))"'
+
+```
+
+Copy the generated token and, in the Transactions Swagger UI:
+
+1. Click **Authorize**
+2. Paste:  
+   `Bearer <internal_token>`
+
+---
+
+📌 **Important note**
+
+- There are **two independent Swagger UIs**
+- Each one keeps its own authorization state
+- Authorizing in one **does not automatically authorize the other**
+
+This is expected behavior.

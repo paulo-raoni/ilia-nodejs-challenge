@@ -7,6 +7,7 @@ import { mustGetEnv, parseBearer, Errors, logger } from '@ilia/shared';
 import { createDbPool } from './config/db.js';
 import { runMigrations } from './infra/db/migrate.js';
 import { transactionsRepository } from './infra/repositories/transactionsRepository.js';
+import { usersClient } from './infra/clients/usersClient.js';
 
 import { createTransactionUseCase } from './application/usecases/createTransaction.js';
 import { listTransactionsUseCase } from './application/usecases/listTransactions.js';
@@ -16,6 +17,7 @@ import { registerRoutes } from './http/routes.js';
 
 import { waitForDb } from '@ilia/shared';
 
+import cors from '@fastify/cors';
 
 dotenv.config();
 
@@ -30,6 +32,21 @@ function verifyInternalJwt(token) {
 
 const app = Fastify({ logger: false });
 
+const allowedOrigins = new Set([
+  'http://localhost:8081',
+  'http://localhost:8082',
+]);
+
+await app.register(cors, {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    return cb(null, allowedOrigins.has(origin));
+  },
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+});
+
 app.setErrorHandler((err, req, reply) => {
   const status = err.statusCode || 500;
   reply.status(status).send({
@@ -39,7 +56,6 @@ app.setErrorHandler((err, req, reply) => {
 });
 
 app.addHook('onRequest', async (req) => {
-  // Internal routes use a different auth mechanism (JWT_INTERNAL_SECRET)
   if (req.url?.startsWith('/internal')) return;
 
   const token = parseBearer(req.headers.authorization);
@@ -60,9 +76,10 @@ async function bootstrap() {
   await runMigrations(pool);
 
   const repo = transactionsRepository(pool);
+  const uClient = usersClient();
 
   const deps = {
-    createTransaction: createTransactionUseCase(repo),
+    createTransaction: createTransactionUseCase({ repo, usersClient: uClient }),
     listTransactions: listTransactionsUseCase(repo),
     getBalance: getBalanceUseCase(repo),
     verifyInternalJwt,

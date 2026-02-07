@@ -3,7 +3,6 @@ import { mustGetEnv, AppError } from '@ilia/shared';
 
 function createInternalToken(userId) {
   const internalSecret = mustGetEnv('JWT_INTERNAL_SECRET');
-  // short token, for internal communication
   return jwt.sign({ sub: userId, internal: true }, internalSecret, { expiresIn: '5m' });
 }
 

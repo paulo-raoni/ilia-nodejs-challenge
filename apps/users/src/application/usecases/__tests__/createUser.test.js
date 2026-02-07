@@ -34,7 +34,7 @@ describe('createUserUseCase', () => {
       last_name: 'Dev',
       email: 'raoni@example.com',
     });
-    expect(createArg.password_hash).toBeTruthy(); // hash gerado
+    expect(createArg.password_hash).toBeTruthy();
 
     expect(result).toEqual({
       id: 'u-1',
